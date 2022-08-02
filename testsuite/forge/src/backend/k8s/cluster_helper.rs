@@ -42,7 +42,6 @@ use tokio::time::Duration;
 // binaries expected to be present on test runner
 const HELM_BIN: &str = "helm";
 pub const KUBECTL_BIN: &str = "kubectl";
-const MAX_NUM_VALIDATORS: usize = 30;
 
 // helm release names and helm chart paths
 const APTOS_NODE_HELM_RELEASE_NAME: &str = "aptos-node";
@@ -403,15 +402,14 @@ fn generate_new_era() -> String {
 
 pub async fn install_testnet_resources(
     kube_namespace: String,
-    base_num_validators: usize,
-    base_validator_image_tag: String,
-    base_genesis_image_tag: String,
+    num_validators: usize,
+    num_fullnodes: usize,
+    validator_image_tag: String,
+    genesis_image_tag: String,
     genesis_modules_path: Option<String>,
     use_port_forward: bool,
     enable_haproxy: bool,
 ) -> Result<(HashMap<PeerId, K8sNode>, HashMap<PeerId, K8sNode>)> {
-    assert!(base_num_validators <= MAX_NUM_VALIDATORS);
-
     let kube_client = create_k8s_client().await;
 
     // get deployment-specific helm values and cache it
@@ -425,9 +423,10 @@ pub async fn install_testnet_resources(
     // get forge override helm values and cache it
     let aptos_node_forge_helm_values_yaml = format!(
         include_str!(APTOS_NODE_FORGE_HELM_VALUES!()),
-        num_validators = base_num_validators,
+        num_validators = num_validators,
+        num_fullnodes = num_fullnodes,
         era = &new_era,
-        image_tag = &base_genesis_image_tag,
+        image_tag = &genesis_image_tag,
         enable_haproxy = enable_haproxy,
         namespace = &kube_namespace,
     );
@@ -449,8 +448,8 @@ pub async fn install_testnet_resources(
 
     let genesis_forge_helm_values_yaml = format!(
         include_str!(GENESIS_FORGE_HELM_VALUES!()),
-        num_validators = base_num_validators,
-        image_tag = &base_genesis_image_tag,
+        num_validators = num_validators,
+        image_tag = &genesis_image_tag,
         era = &new_era,
         root_key = DEFAULT_ROOT_KEY,
         validator_internal_host_suffix = validator_internal_host_suffix,
@@ -503,7 +502,7 @@ pub async fn install_testnet_resources(
     let (validators, fullnodes) = collect_running_nodes(
         &kube_client,
         kube_namespace,
-        base_validator_image_tag,
+        validator_image_tag,
         use_port_forward,
         enable_haproxy,
     )
@@ -516,14 +515,14 @@ pub async fn install_testnet_resources(
 pub async fn collect_running_nodes(
     kube_client: &K8sClient,
     kube_namespace: String,
-    base_validator_image_tag: String,
+    validator_image_tag: String,
     use_port_forward: bool,
     enable_haproxy: bool,
 ) -> Result<(HashMap<PeerId, K8sNode>, HashMap<PeerId, K8sNode>)> {
     // get all validators
     let validators = get_validators(
         kube_client.clone(),
-        &base_validator_image_tag,
+        &validator_image_tag,
         &kube_namespace,
         use_port_forward,
         enable_haproxy,
@@ -541,7 +540,7 @@ pub async fn collect_running_nodes(
     // get all fullnodes
     let fullnodes = get_fullnodes(
         kube_client.clone(),
-        &base_validator_image_tag,
+        &validator_image_tag,
         &kube_namespace,
         use_port_forward,
         enable_haproxy,

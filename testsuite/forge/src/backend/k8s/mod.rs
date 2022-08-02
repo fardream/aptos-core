@@ -90,7 +90,8 @@ impl Factory for K8sFactory {
     async fn launch_swarm(
         &self,
         _rng: &mut StdRng,
-        node_num: NonZeroUsize,
+        num_validators: NonZeroUsize,
+        num_fullnodes: usize,
         init_version: &Version,
         genesis_version: &Version,
         genesis_config: Option<&GenesisConfig>,
@@ -127,7 +128,8 @@ impl Factory for K8sFactory {
             // try installing testnet resources, but clean up if it fails
             match install_testnet_resources(
                 self.kube_namespace.clone(),
-                node_num.get(),
+                num_validators.get(),
+                num_fullnodes,
                 format!("{}", init_version),
                 format!("{}", genesis_version),
                 genesis_modules_path,

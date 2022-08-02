@@ -140,6 +140,8 @@ struct Resize {
     namespace: String,
     #[structopt(long, default_value = "30")]
     num_validators: usize,
+    #[structopt(long, default_value = "1")]
+    num_fullnodes: usize,
     #[structopt(
         long,
         help = "Override the image tag used for validators",
@@ -242,6 +244,7 @@ fn main() -> Result<()> {
                 runtime.block_on(install_testnet_resources(
                     resize.namespace,
                     resize.num_validators,
+                    resize.num_fullnodes,
                     resize.validator_image_tag,
                     resize.testnet_image_tag,
                     resize.move_modules_dir,
