@@ -12,5 +12,5 @@ slug: "api-index"
 
 ## Devnet API
 
-- **REST API Devnet URL**: Replace the example URL `http://localhost:3000/` you see in the API spec with this devnet URL: `https://fullnode.devnet.aptoslabs.com`.
+- **REST API Devnet URL**: Replace the example URL `http://aptos.dev/` you see in the API spec with this devnet URL: `https://fullnode.devnet.aptoslabs.com`.
 - **REST API devnet specification**: [REST API spec for devnet](pathname:///api/devnet-api.html?spec=https://raw.githubusercontent.com/aptos-labs/aptos-core/devnet/api/doc/openapi.yaml&hideTryIt=false). 
